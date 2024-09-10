@@ -1,4 +1,4 @@
-const userModel = require("../models/userModel");
+const UserModel = require("../models/userModel");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
@@ -7,7 +7,7 @@ const jwt = require("jsonwebtoken");
 const createUser = async(req, res) => {
     try {
         const {firstname, lastname, email, mobile, password} = req.body;
-        const userExist = await userModel.findOne({email});
+        const userExist = await UserModel.findOne({email});
         //userExist or not
         if(userExist){
             return res.status(400).json({
@@ -32,7 +32,7 @@ const createUser = async(req, res) => {
         //password hashed
             const hashPassword = await bcrypt.hashSync(password, 10);
 
-        const newUserRegister = await userModel.create({
+        const newUserRegister = await UserModel.create({
             ...req.body,
             password : hashPassword
         })
@@ -59,7 +59,7 @@ const login = async (req, res) => {
             })
         };
         //userExist or not
-        const user = await userModel.findOne({email});
+        const user = await UserModel.findOne({email});
         // console.log(user);
         if(!user){
             return res.status(401).json({
@@ -99,9 +99,52 @@ const login = async (req, res) => {
 }
 
 
+//                                          Get all user
+const getAllUser = async(req, res) => {
+    try {
+        const allUserList = await UserModel.find();
+        return res.status(200).json({
+            message : "List of all user",
+            success : true,
+            allUsersList : allUserList
+        })
+    } catch (error) {
+        console.log("getAllUser error ", error);       
+    }
+}
+
+//                                          Get a single user
+const singleUser = async(req, res) => {
+    try {
+        const {id} = req.params;
+        const findUser = await UserModel.findById(id);
+        return res.status(200).json({
+            message : "user details",
+            success : true,
+            Data : findUser
+        })
+    } catch (error) {
+        console.log("singleUser details api error ", error);  
+    }
+}
+
+
+
+//.                                      Logout
+const logout = (req, res) => {
+    return res.cookie("token", "", { expiresIn: new Date(Date.now()) }).json({
+        message: "user logged out successfully.",
+        success: true
+    })
+}
+
+
 const userController = {
     createUser,
-    login
+    login,
+    getAllUser,
+    singleUser,
+    logout
 };
 
 
