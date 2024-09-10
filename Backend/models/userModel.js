@@ -24,9 +24,13 @@ const userSchema = new mongoose.Schema({
     password : {
         type : String,
         required : true,
-    }
+    },
+    role: {
+        type: String,
+        default: "user",
+      }
 })
 
-const User = mongoose.model("ecommerceUsers", userSchema);
+const userModel = mongoose.model("ecommerceusers", userSchema);
 
-module.exports = User;
+module.exports = userModel;
