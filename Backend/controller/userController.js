@@ -36,6 +36,7 @@ const createUser = async(req, res) => {
             ...req.body,
             password : hashPassword
         })
+        //Response
         return res.status(201).json({
             message : "Account created successfully",
             success : true,
@@ -81,7 +82,7 @@ const login = async (req, res) => {
         }
         const token = await jwt.sign(tokenData, process.env.TOKEN_SECRET, { expiresIn: "7d" });
 
-         //logged in user details
+         // Response
         return res.status(200).cookie("token", token, { expiresIn: "7d", httpOnly: true }).json({
             message: `Welcome ${user.firstname} ${user.lastname}`,
             success: true,
@@ -99,10 +100,44 @@ const login = async (req, res) => {
 }
 
 
+//                                          update user
+const updateUser = async(req, res) => {
+    try {
+        const {id} = req.params;
+        const findUserAndUpdate = await UserModel.findByIdAndUpdate(id,
+            {
+                firstname : req?.body?.firstname,
+                lastname : req?.body?.lastname,
+                email : req?.body?.email,
+                mobile : req?.body?.mobile,
+            },
+            {
+                new : true,
+            }
+        );
+       // validation
+        if(!findUserAndUpdate ){
+            return res.status(404).json({
+                message : "user not found",
+                success : false
+            })
+        }
+       //Response
+        return res.status(200).json({
+            messgae : "user is updated",
+            success : true,
+            Data : findUserAndUpdate 
+        })
+    } catch (error) {
+       throw new Error("error");
+    }
+}
+
 //                                          Get all user
 const getAllUser = async(req, res) => {
     try {
         const allUserList = await UserModel.find();
+        // Response
         return res.status(200).json({
             message : "List of all user",
             success : true,
@@ -114,20 +149,52 @@ const getAllUser = async(req, res) => {
 }
 
 //                                          Get a single user
-const singleUser = async(req, res) => {
+const getUser = async(req, res) => {
     try {
         const {id} = req.params;
         const findUser = await UserModel.findById(id);
+       // validation
+        if(!findUser){
+            return res.status(404).json({
+                message : "user not found",
+                success : false
+            })
+        }
         return res.status(200).json({
             message : "user details",
             success : true,
             Data : findUser
         })
     } catch (error) {
-        console.log("singleUser details api error ", error);  
+        console.log("getUser details api error ", error);  
     }
 }
 
+
+//                                         Delete a single user
+const deleteUser = async(req, res) => {
+  try {
+    const {id} = req.params
+    const userDelete = await UserModel.findByIdAndDelete(id);
+    // validation
+    if(!userDelete){
+        return res.status(404).json({
+            message : "user not found",
+            success : false
+        })
+    }
+
+    return res.status(200).json({
+        message : "User deleted successfully",
+        success : true,
+        Data  : userDelete
+
+    }) 
+  } catch (error) {
+    throw new Error("error");
+    
+  }
+}
 
 
 //.                                      Logout
@@ -142,8 +209,10 @@ const logout = (req, res) => {
 const userController = {
     createUser,
     login,
+    updateUser,
     getAllUser,
-    singleUser,
+    getUser,
+    deleteUser,
     logout
 };
 
